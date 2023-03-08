@@ -48,6 +48,8 @@ app = Flask(__name__)
 # Declare variables
 # declared in setup.py
 API_TOKEN = TEST
+NOTION_TOKEN # This is the token for your notion API
+DATABASE_ID # This is the database ID of where your quotes are stored
 
 # # Create an Updater instance using the telegram API token
 # updater = Updater(token=API_TOKEN, use_context=True)
