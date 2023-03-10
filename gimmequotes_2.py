@@ -64,15 +64,44 @@ headers = {
 message = None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! Welcome to the Gimme Quotes Bot!\nDo you have quotes for me?")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=" Hi! Welcome to the Gimme Quotes Bot!")
     time.sleep(1)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Please send them to me in the following format:\n'This is the quote.'/'This is the author's name'")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Quotes are a great source of motivation\n" +"Hopefully with this bot you can /give and /receive some quotes and spread some love.")
+    time.sleep(1.8)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Let's begin! \n\n" 
+    + "/give - if you want to send us a quote\n"
+    + "/receive -  if you want to receive a quote\n"
+    + "/about - to find out more about this bot\n"
+    + "/help - will lead you to a help guide on how to use this bot\n")
+
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Gimme Quotes bot is a telegram bot that send and receives quotes via telegram to a Notion database via the Notion-API \n")
     time.sleep(1)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="e.g.\n" 
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Quotes database can be accessed at \nhttps://syaz.super.site/quotespicsmusings\n\n" +
+                                   "Sample code on Github\nhttps://github.com/nawzaysfinah/gimme-quotes\n\n" +  "Credits:\nPython-Telegram-Bot, Pretty Static")
+    time.sleep(1)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="How's bout a good ol' quote for you, buddy? /receive")
+    time.sleep(1)
+
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="So you need some help? I've got you :)\n"+ "To send a quote, please send them to me in the following format:\n")
+    time.sleep(1)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="This is the quote.'/'This is the author's name'\n")
+    time.sleep(1)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="For e.g.\n" 
     + "This is an awesome inspirational quote/Author's Name\n\n")
     time.sleep(1.5)
+    await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo ='https://telegra.ph/file/ba54c95d6c5c83c6760cf.jpg', caption = "Here's an example of how to use the Gimme Quotes bot")
+    time.sleep(2)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="If you're ready, you can start sending me quotes!")
 
+async def give(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="To send a quote: Please send them to me in the following format:?\n" 
+    + "This is the quote.'/'This is the author's name'\n")
+    time.sleep(2)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Alright buddy, what do you have for me?")
+    time.sleep(1)
 
 async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
 # Collect the message
@@ -97,7 +126,7 @@ async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text='"'+ Quote + '"\n' + "- " + Author)
     await context.bot.send_message(chat_id=update.effective_chat.id, text='Thank you for the quote!')
-    await context.bot.send_message(chat_id=update.effective_chat.id, text='Send me another quote! or /call a quote at random from our database?')
+    await context.bot.send_message(chat_id=update.effective_chat.id, text='/give me another quote! or /receive a quote at random from our database?')
     published_date = datetime.now().astimezone(timezone.utc).isoformat()
     data = {
         "Author": {"title": [{"text": {"content": Author}}]},
@@ -108,7 +137,7 @@ async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
     create_page(data)
 
 #need to write new command handler to return code from notion database at random with Quote & Author.
-async def call(update:Update, context:ContextTypes.DEFAULT_TYPE):
+async def receive(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text='chotomate! retrieving quote for you des...')
     
     # def get_pages(num_pages=None):
@@ -165,11 +194,12 @@ async def call(update:Update, context:ContextTypes.DEFAULT_TYPE):
     Author_msg = author[quoteChoice] # picks the author at index of the random number generated
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=Quote_msg + "\n\n - " + Author_msg)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Would you like to send another quote or /call a new one?")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Would you like to /give another quote or /receive a new one?\n" + 
+                                   "Forward this quote to your friends, to share the love!")
 
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="I only respond to /start or /call")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="I only respond to /start, /give, /receive or /help")
 
 
 #declare ApplicationBuilder & Handlers below
@@ -177,13 +207,19 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(API_TOKEN).build()
 
     start_handler = CommandHandler('start', start)
-    call_handler = CommandHandler('call', call)
+    about_handler = CommandHandler('about', about)
+    help_handler = CommandHandler('help', help)
+    receive_handler = CommandHandler('receive', receive)
+    give_handler = CommandHandler('give', give)
     quote_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), quote)
     unknown_handler = MessageHandler(filters.COMMAND, unknown)
 
     application.add_handler(start_handler)
+    application.add_handler(about_handler)
+    application.add_handler(help_handler)
     application.add_handler(quote_handler)
-    application.add_handler(call_handler)
+    application.add_handler(receive_handler)
+    application.add_handler(give_handler)
     application.add_handler(unknown_handler)
 
     application.run_polling()
