@@ -10,6 +10,7 @@ import time # to add delay to telegram bot
 import random # to randomly select quote from Notion database
 import schedule # to create a schedule of posting
 import time
+import telegram
 
 from telegram import __version__ as TG_VER
 from setup import GIMME, TEST, NOTION_TOKEN, DATABASE_ID
@@ -60,7 +61,8 @@ headers = {
 message = None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=" Hi! Welcome to the Gimme Quotes Bot!")
+    user = update.effective_user
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hey {user.first_name}!\nWelcome to the Gimme Quotes Bot!")
     time.sleep(1)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Quotes are a great source of motivation\n" +"Hopefully with this bot you can /give and /receive some quotes and spread some love.")
     time.sleep(1.8)
@@ -68,6 +70,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     + "/give - if you want to send us a quote\n"
     + "/receive -  if you want to receive a quote\n"
     + "/about - to find out more about this bot\n"
+    + "/daily - to subscribe to a daily quote\n"
     + "/help - will lead you to a help guide on how to use this bot\n")
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -150,7 +153,7 @@ async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-async def schedule(update:Update, context:ContextTypes.DEFAULT_TYPE):     
+async def daily(update:Update, context:ContextTypes.DEFAULT_TYPE):     
     DECISION = range(1)
     # Schedule a message everyday at 9:00 AM
     # await context.bot.send_message(chat_id=update.effective_chat.id, text="Do you want to turn on the message scheduler?")
@@ -228,7 +231,7 @@ if __name__ == '__main__':
     receive_handler = CommandHandler('receive', receive)
     give_handler = CommandHandler('give', give)
     quote_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), quote)
-    schedule_handler = CommandHandler('schedule', schedule)
+    daily_handler = CommandHandler('daily', daily)
     unknown_handler = MessageHandler(filters.COMMAND, unknown)
     
 
@@ -238,7 +241,7 @@ if __name__ == '__main__':
     application.add_handler(quote_handler)
     application.add_handler(receive_handler)
     application.add_handler(give_handler)
-    application.add_handler(schedule_handler)
+    application.add_handler(daily_handler)
     application.add_handler(unknown_handler)
     
     
