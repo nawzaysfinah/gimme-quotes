@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "@notionhq/client": "^2.2.5",
+    "express": "^4.18.2"
+  },
+  "name": "gimme-quotes",
+  "description": "## Overview [Gimme Quotes](https://t.me/gimmequotes_bot) is a telegram bot that sends and receives quotes via telegram to a Notion database via the [Notion-API](https://developers.notion.com/reference/intro)",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
