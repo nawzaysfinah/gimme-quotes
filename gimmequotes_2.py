@@ -1,20 +1,15 @@
 import logging
-from telegram.ext import filters, ApplicationBuilder, MessageHandler, CommandHandler, ContextTypes
-import requests
-import notion_client
-from notion_client import Client
-from datetime import datetime, timezone
 import os
-import json # to PARSE JSON string to return values
-import time # to add delay to telegram bot
-import random # to randomly select quote from Notion database
-import schedule # to create a schedule of posting
+import requests
+import json
 import time
+import random
+import schedule
 import telegram
 import pytz
-
+from datetime import datetime, timezone
 from telegram import __version__ as TG_VER
-from setup import GIMME, TEST, NOTION_TOKEN, DATABASE_ID
+from flask import Flask
 
 try:
     from telegram import __version_info__
@@ -42,22 +37,18 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-#to start Flask WebApp
-from flask import Flask, request
-
 app = Flask(__name__)
 
-# Declare variables
-# Declared in setup.py
-API_TOKEN = GIMME
-NOTION_TOKEN # This is the token for your notion API
-DATABASE_ID # This is the database ID of where your quotes are stored
+# Environment variables
+API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
+NOTION_TOKEN = os.getenv('NOTION_TOKEN')
+DATABASE_ID = os.getenv('NOTION_DATABASE_ID')
 
 headers = {
-        "Authorization": "Bearer " + NOTION_TOKEN,
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
+    "Authorization": f"Bearer {NOTION_TOKEN}",
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28",
+}
 
 message = None
 tz = pytz.timezone("Asia/Singapore")
@@ -85,7 +76,6 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="How's bout a good ol' quote for you, buddy? /receive")
     time.sleep(1)
 
-
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="So you need some help? I've got you :)\n"+ "To send a quote, please send them to me in the following format:\n")
     time.sleep(1)
@@ -106,7 +96,6 @@ async def give(update: Update, context: ContextTypes.DEFAULT_TYPE):
     time.sleep(1)
 
 async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
-# Collect the message
     message = update.message.text
 
     def create_page(data: dict):
@@ -138,47 +127,30 @@ async def quote(update:Update, context: ContextTypes.DEFAULT_TYPE):
 
     create_page(data)
 
-
-# Command handler to return code from notion database at random with Quote & Author.
 async def receive(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text='chotomate! retrieving quote for you des...')
 
-    # def get_pages(num_pages=None):
     readURL = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
-    num_pages = None
-    get_all = num_pages is None
-    page_size = 100 if get_all else num_pages
-    payload = {"page_size": page_size}
+    payload = {"page_size": 100}
 
-    res = requests.request("POST",readURL,json=payload, headers=headers) #change json to filter for correct things
+    res = requests.request("POST",readURL,json=payload, headers=headers)
     data = res.json()
 
     res_status = str(res.status_code)
     print("POST request: " + res_status)
-    # print("JSON string is: " + res.text)
 
-    # # Code below is to dump JSON data into a .json file to be analyzed.
-    # with open('./db.json', 'w', encoding = 'utf8') as f:
-    #     json.dump(data, f, ensure_ascii=False)
-
-    # this is to the retrieve the results from the JSON string
     results = data['results']
 
     quotes = []
     author = []
     for result in results:
-        # print(result["properties"]["Quote"]["rich_text"][0]["plain_text"]) # this prints it all
-        """
-        quotes = result["properties"]["Quote"]["rich_text"][0]["plain_text"]
-        author = result["properties"]["Author"]["title"][0]["plain_text"]
-        """
         quotes.append(result["properties"]["Quote"]["rich_text"][0]["plain_text"])
         author.append(result["properties"]["Author"]["title"][0]["plain_text"])
 
-    quoteChoice = random.randint(0, len(quotes)) # pick a random number between 0 and the number of available quotes
-    print(quoteChoice) # prints the selected random number
-    Quote_msg = str(quotes[quoteChoice]) # picks the quote at index of the random number generated
-    Author_msg = author[quoteChoice] # picks the author at index of the random number generated
+    quoteChoice = random.randint(0, len(quotes) - 1)
+    print(quoteChoice)
+    Quote_msg = str(quotes[quoteChoice])
+    Author_msg = author[quoteChoice]
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=Quote_msg + "\n\n - " + Author_msg)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Would you like to /give another quote or /receive a new one?\n" +
@@ -188,9 +160,8 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I only respond to /start, /give, /receive or /help")
 
-# Declare ApplicationBuilder & Handlers below
 if __name__ == '__main__':
-    application = ApplicationBuilder().token(API_TOKEN).build()
+    application = Application.builder().token(API_TOKEN).build()
 
     start_handler = CommandHandler('start', start)
     about_handler = CommandHandler('about', about)
@@ -198,9 +169,7 @@ if __name__ == '__main__':
     receive_handler = CommandHandler('receive', receive)
     give_handler = CommandHandler('give', give)
     quote_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), quote)
-    # daily_handler = CommandHandler('daily', daily)
     unknown_handler = MessageHandler(filters.COMMAND, unknown)
-
 
     application.add_handler(start_handler)
     application.add_handler(about_handler)
@@ -208,9 +177,7 @@ if __name__ == '__main__':
     application.add_handler(quote_handler)
     application.add_handler(receive_handler)
     application.add_handler(give_handler)
-    # application.add_handler(daily_handler)
     application.add_handler(unknown_handler)
-
 
     application.run_polling()
 
@@ -219,5 +186,3 @@ schedule.every().day.at(morning).do(receive)
 while True:
     schedule.run_pending()
     time.sleep(1)
-
-  
