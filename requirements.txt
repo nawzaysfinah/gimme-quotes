@@ -11,4 +11,3 @@ python-telegram-bot
 pytz
 requests
 schedule
-setup
