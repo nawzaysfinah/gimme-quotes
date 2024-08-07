@@ -1,3 +1,4 @@
+streamlit
 Flask
 notion_client
 python-telegram-bot
