@@ -21,11 +21,14 @@ tz = pytz.timezone("Asia/Singapore")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Hey {user.first_name}!\nWelcome to the Gimme Quotes Bot!")
+    chat = update.effective_chat
+    if user is None or chat is None:
+        return
+    await context.bot.send_message(chat_id=chat.id, text=f"Hey {user.first_name}!\nWelcome to the Gimme Quotes Bot!")
     time.sleep(1)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Quotes are a great source of motivation\nHopefully with this bot you can /give and /receive some quotes and spread some love.")
+    await context.bot.send_message(chat_id=chat.id, text="Quotes are a great source of motivation\nHopefully with this bot you can /give and /receive some quotes and spread some love.")
     time.sleep(1.8)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Let's begin! \n\n"
+    await context.bot.send_message(chat_id=chat.id, text="Let's begin! \n\n"
         + "/give - if you want to send us a quote\n"
         + "/receive -  if you want to receive a quote\n"
         + "/about - to find out more about this bot\n"
