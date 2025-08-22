@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: gimme-quotes-bot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn main:app --worker-class aiohttp.GunicornWebWorker --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: TELEGRAM_API_TOKEN
+        sync: false
+      - key: NOTION_TOKEN
+        sync: false
+      - key: NOTION_DATABASE_ID
+        sync: false
