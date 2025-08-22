@@ -49,3 +49,7 @@ async def set_webhook():
     webhook_url = f"{request.host_url.rstrip('/')}/{GIMME}"
     success = await application.bot.set_webhook(url=webhook_url)
     return f"Webhook set: {success}"
+
+@app.route('/')
+def hello():
+    return 'Hello from Flask'
