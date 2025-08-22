@@ -1,8 +1,7 @@
 import os
 
-#declare variables
-
-GIMME = '5912247638:AAHo1kYgW2c6TWiOuJAlWuSfKouzoVAFTQE' #gimmequotes_bot
-TEST = '5767083831:AAHjXCOMr8Akl-k8tpPJB6YfC1Zn775InWo' #nawzaysfinah bot
-NOTION_TOKEN = "secret_aMGOZvx3omcSowLfmIOi93VeQBWU5LVWDXknwtXrXBy"
-DATABASE_ID = "a0238c1d750f447da33929fedff8b494" #https://syaz.notion.site/a0238c1d750f447da33929fedff8b494?v=a1a13f6e68394476a37bec9cdc98c673
+# Environment variables expected to be set in Render.com dashboard
+GIMME = os.getenv("TELEGRAM_API_TOKEN")         # gimmequotes_bot token
+TEST = os.getenv("TEST_TELEGRAM_API_TOKEN")     # nawzaysfinah bot token (optional/test)
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")        # Notion integration token
+DATABASE_ID = os.getenv("NOTION_DATABASE_ID")   # Notion database ID
