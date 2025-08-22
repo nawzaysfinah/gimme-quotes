@@ -1,6 +1,7 @@
-
 Flask==2.3.2
 python-telegram-bot==20.6
+gunicorn
+aiohttp
+requests
 notion-client
 pytz
-requests
